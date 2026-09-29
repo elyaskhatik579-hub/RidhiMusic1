@@ -1,8 +1,5 @@
 # ═══════════════════════════════════════════════════════════
-#        😎  VISHAL MUSIC BOT  😎
-#   GitHub : github.com/ItsMeVishal0/VishalMusic
-#   Developer : @ItsMeVishalBots | Telegram
-#   Module : Bot Configuration & Environment Variables
+#        😎  RIDHI MUSIC BOT  😎
 # ═══════════════════════════════════════════════════════════
 
 import re
@@ -14,19 +11,19 @@ from pyrogram import filters
 load_dotenv()
 
 # ── Core bot config ─────────────────────────────────────────────────────────
-API_ID = int(getenv("API_ID", 26493077))
-API_HASH = getenv("API_HASH", "6586f0276c7748e54684719bdd247d90")
+API_ID = int(getenv("API_ID", 39636887))
+API_HASH = getenv("API_HASH", "58d9e9789942f13dfeae5a58aadc967c")
 BOT_TOKEN = getenv("BOT_TOKEN")
 
-OWNER_ID = int(getenv("OWNER_ID", 7044783841))
-OWNER_USERNAME = getenv("OWNER_USERNAME", "ItsMeVishalBots")
-BOT_USERNAME = getenv("BOT_USERNAME", "vaishaliTune_bot")
-BOT_NAME = getenv("BOT_NAME", "≽ ^⎚ 𝘃𝗮𝗶𝘀𝗵𝗮𝗹𝗶 𝘅 𝗺𝘂𝘀𝗶𝗰 ⎚^ ≼")
+OWNER_ID = int(getenv("OWNER_ID", 8922591120))
+OWNER_USERNAME = getenv("OWNER_USERNAME", "DevilShivaop )
+BOT_USERNAME = getenv("BOT_USERNAME", "RIdhii_Music_bot")
+BOT_NAME = getenv("BOT_NAME", "≽ ^⎚ 𝑹𝒊𝒅𝒉𝒊 𝘅 𝗺𝘂𝘀𝗶𝗰 ⎚^ ≼")
 ASSUSERNAME = getenv("ASSUSERNAME", "≽ ^⎚ 𝗮𝘀𝘀𝗶𝘀𝘁𝗮𝗻𝘁 ⎚^ ≼")
 
 # ── Database & logging ────────────────────────────────────────────────────────
 MONGO_DB_URI = getenv("MONGO_DB_URI")
-LOGGER_ID = int(getenv("LOGGER_ID", -1002425220992))
+LOGGER_ID = int(getenv("LOGGER_ID", -1003967121724))
 
 # ── Limits (durations in min/sec; sizes in bytes) ──────────────────────────────
 DURATION_LIMIT_MIN = int(getenv("DURATION_LIMIT", 300))
@@ -59,8 +56,8 @@ UPSTREAM_BRANCH = getenv("UPSTREAM_BRANCH", "main")
 GIT_TOKEN = getenv("GIT_TOKEN")  # needed if repo is private
 
 # ── Support links ──────────────────────────────────────────────────────────
-SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/ItsMeVishalBots")
-SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/ItsMeVishalBots")
+SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/+SnUd5iJTEqY3YzUx")
+SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/+R710iJ16hGIwOWE1")
 # Link used by the /privacy command (set your own privacy-policy post/page)
 PRIVACY_LINK = getenv("PRIVACY_LINK", SUPPORT_CHAT)
 
@@ -156,12 +153,12 @@ if COOKIE_URL and not re.match(r"^https://(batbin\.me|pastebin\.com)/[A-Za-z0-9]
     
 print("""
 ╔════════════════════════════════════╗
-║🎵 𝗩𝗜𝗦𝗛𝗔𝗟 𝗠𝗨𝗦𝗜𝗖 𝗕𝗢𝗧 𝗣𝗥𝗘𝗠𝗜𝗨𝗠 𝗘𝗗𝗜𝗧𝗜𝗢𝗡  
+║🎵 𝐑𝐈𝐃𝐇𝐈 𝗠𝗨𝗦𝗜𝗖 𝗕𝗢𝗧 𝗣𝗥𝗘𝗠𝗜𝗨𝗠 𝗘𝗗𝗜𝗧𝗜𝗢𝗡  
 ║       ✦ 𝗖𝗼𝗻𝗳𝗶𝗴 𝗟𝗼𝗮𝗱𝗲𝗱 𝗦𝘂𝗰𝗰𝗲𝘀𝘀! ✦   
 ╚════════════════════════════════════╝
 """)
 
 # ═══════════════════════════════════════════════════════════
-#        😎  VISHAL MUSIC BOT  😎
+#        😎   MUSIC BOT  😎
 #   github.com/ItsMeVishal0/VishalMusic
 # ═══════════════════════════════════════════════════════════
