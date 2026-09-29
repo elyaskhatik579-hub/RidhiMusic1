@@ -1,10 +1,3 @@
-# ═══════════════════════════════════════════════════════════
-#        😎  VISHAL MUSIC BOT  😎
-#   GitHub : github.com/ItsMeVishal0/VishalMusic
-#   Developer : @ItsMeVishalBots | Telegram
-#   Module : Voice Chat Call Handler & Stream Manager
-# ═══════════════════════════════════════════════════════════
-
 import asyncio
 import logging
 import os
@@ -13,7 +6,6 @@ from datetime import datetime, timedelta
 from typing import Union
 
 from ntgcalls import TelegramServerError
-from pyrogram import Client
 from pyrogram.errors import FloodWait, ChatAdminRequired
 from pytgcalls import PyTgCalls
 from pytgcalls.exceptions import NoActiveGroupCall
@@ -85,34 +77,89 @@ async def _clear_(chat_id: int) -> None:
     await remove_active_chat(chat_id)
     await set_loop(chat_id, 0)
 
+async def _youtube_download_with_fallback(
+    link: str,
+    mystic,
+    video: bool = False,
+    videoid: str = None,
+):
+    """
+    YouTube download path:
+      1) Existing YouTube downloader (primary API/fallback API/yt-dlp)
+      2) Direct YouTube.video stream fallback
+    The fallback API being offline must not stop playback.
+    """
+    last_error = None
+
+    for attempt in range(3):
+        try:
+            result = await YouTube.download(
+                link,
+                mystic,
+                video=video,
+                videoid=videoid,
+                songvideo=video,
+                songaudio=not video,
+            )
+            if result:
+                file_path, direct = result
+                if file_path:
+                    return file_path, direct
+        except Exception as e:
+            last_error = e
+
+        if attempt < 2:
+            await asyncio.sleep(1.5 * (attempt + 1))
+
+    # Final direct-stream fallback. This uses the existing YouTube class,
+    # which itself falls back to yt-dlp + cookies when APIs are unavailable.
+    try:
+        status, stream = await YouTube.video(link, videoid)
+        if status == 1 and stream:
+            return stream, None
+    except Exception as e:
+        last_error = e
+
+    if last_error:
+        logger.warning(f"YouTube fallback failed: {last_error}")
+
+    return None, None
+
+
 class Call:
     def __init__(self):
-        self.userbot1 = Client(
-            "VishalXAssis1", config.API_ID, config.API_HASH, session_string=config.STRING1, sleep_threshold=60
-        ) if config.STRING1 else None
-        self.one = PyTgCalls(self.userbot1) if self.userbot1 else None
+        # Assistant Pyrogram clients are created and started by core/userbot.py.
+        # Creating the same session a second time here can cause session conflicts
+        # and prevent the assistant from joining the voice chat.
+        self.userbot1 = None
+        self.userbot2 = None
+        self.userbot3 = None
+        self.userbot4 = None
+        self.userbot5 = None
 
-        self.userbot2 = Client(
-            "VishalXAssis2", config.API_ID, config.API_HASH, session_string=config.STRING2, sleep_threshold=60
-        ) if config.STRING2 else None
-        self.two = PyTgCalls(self.userbot2) if self.userbot2 else None
-
-        self.userbot3 = Client(
-            "VishalXAssis3", config.API_ID, config.API_HASH, session_string=config.STRING3, sleep_threshold=60
-        ) if config.STRING3 else None
-        self.three = PyTgCalls(self.userbot3) if self.userbot3 else None
-
-        self.userbot4 = Client(
-            "VishalXAssis4", config.API_ID, config.API_HASH, session_string=config.STRING4, sleep_threshold=60
-        ) if config.STRING4 else None
-        self.four = PyTgCalls(self.userbot4) if self.userbot4 else None
-
-        self.userbot5 = Client(
-            "VishalXAssis5", config.API_ID, config.API_HASH, session_string=config.STRING5, sleep_threshold=60
-        ) if config.STRING5 else None
-        self.five = PyTgCalls(self.userbot5) if self.userbot5 else None
+        self.one = None
+        self.two = None
+        self.three = None
+        self.four = None
+        self.five = None
 
         self.active_calls: set[int] = set()
+
+    def _bind_assistants(self):
+        # Called only after core/userbot.py has started the assistant sessions.
+        from VISHALMUSIC import userbot as assistant_manager
+
+        self.userbot1 = assistant_manager.one if config.STRING1 else None
+        self.userbot2 = assistant_manager.two if config.STRING2 else None
+        self.userbot3 = assistant_manager.three if config.STRING3 else None
+        self.userbot4 = assistant_manager.four if config.STRING4 else None
+        self.userbot5 = assistant_manager.five if config.STRING5 else None
+
+        self.one = PyTgCalls(self.userbot1) if self.userbot1 else None
+        self.two = PyTgCalls(self.userbot2) if self.userbot2 else None
+        self.three = PyTgCalls(self.userbot3) if self.userbot3 else None
+        self.four = PyTgCalls(self.userbot4) if self.userbot4 else None
+        self.five = PyTgCalls(self.userbot5) if self.userbot5 else None
 
 
     @capture_internal_err
@@ -431,11 +478,11 @@ class Call:
 
                 for attempt in range(max_retries):
                     try:
-                        file_path, direct = await YouTube.download(
+                        file_path, direct = await _youtube_download_with_fallback(
                             videoid,
                             mystic,
-                            videoid=True,
                             video=True if str(streamtype) == "video" else False,
+                            videoid=True,
                         )
                         if file_path:
                             download_success = True
@@ -531,30 +578,48 @@ class Call:
 
     async def start(self) -> None:
         LOGGER(__name__).info("Starting PyTgCalls Clients...")
-        if config.STRING1:
-            await self.one.start()
-        if config.STRING2:
-            await self.two.start()
-        if config.STRING3:
-            await self.three.start()
-        if config.STRING4:
-            await self.four.start()
-        if config.STRING5:
-            await self.five.start()
+
+        # Reuse the already authenticated assistant sessions from userbot.py.
+        # This avoids starting duplicate Pyrogram sessions with the same
+        # STRING_SESSION and allows the assistant to join/play in voice chats.
+        self._bind_assistants()
+
+        started = 0
+        for name, client in (
+            ("Assistant 1", self.one),
+            ("Assistant 2", self.two),
+            ("Assistant 3", self.three),
+            ("Assistant 4", self.four),
+            ("Assistant 5", self.five),
+        ):
+            if client:
+                try:
+                    await client.start()
+                    started += 1
+                    LOGGER(__name__).info(f"✅ PyTgCalls {name} ready")
+                except Exception as e:
+                    LOGGER(__name__).error(f"❌ PyTgCalls {name} failed to start: {e}")
+
+        if started == 0:
+            raise RuntimeError(
+                "No assistant is available for PyTgCalls. "
+                "Check STRING_SESSION/STRING_SESSION2/... variables."
+            )
 
     @capture_internal_err
     async def ping(self) -> str:
         pings = []
-        if config.STRING1:
-            pings.append(self.one.ping)
-        if config.STRING2:
-            pings.append(self.two.ping)
-        if config.STRING3:
-            pings.append(self.three.ping)
-        if config.STRING4:
-            pings.append(self.four.ping)
-        if config.STRING5:
-            pings.append(self.five.ping)
+        for client in (self.one, self.two, self.three, self.four, self.five):
+            if client:
+                try:
+                    value = client.ping
+                    if callable(value):
+                        value = value()
+                    if asyncio.iscoroutine(value):
+                        value = await value
+                    pings.append(float(value))
+                except Exception:
+                    continue
         return str(round(sum(pings) / len(pings), 3)) if pings else "0.0"
 
     @capture_internal_err
@@ -611,8 +676,3 @@ class Call:
 
 
 VISHAL = Call()
-
-# ═══════════════════════════════════════════════════════════
-#        😎  VISHAL MUSIC BOT  😎
-#   github.com/ItsMeVishal0/VishalMusic
-# ═══════════════════════════════════════════════════════════
